@@ -13,7 +13,7 @@ import android.os.IBinder;
 public class PlayService extends Service {
 	public static final int MESSAGE_START = 0;
 	public static final int MESSAGE_PLAY = 1;
-	public static final int MESSAGE_FINISH = 2;
+	public static final int MESSAGE_EXIT = 2;  //no use
 	public static final int MESSAGE_LOOP = 3;
 	public static final int MESSAGE_UNLOOP = 4;
 	public static final int MESSAGE_SKIP = 5;
@@ -36,9 +36,11 @@ public class PlayService extends Service {
 			@Override
 			public void onCompletion(MediaPlayer mp) {
 //				System.out.println("looping is: " + looping);
-				if (looping) {
-					start();
-				}
+//				if (looping) {
+//					start();
+//				}
+				Intent intent = new Intent(Const.ACTION_SONG_FINISHED);
+				sendBroadcast(intent);
 			}
 		});
 	}
@@ -49,7 +51,7 @@ public class PlayService extends Service {
 			System.out.println("intent ====================== null");
 		}
 		int state = intent.getIntExtra("state", MESSAGE_PLAY);
-		if (state == MESSAGE_FINISH) {
+		if (state == MESSAGE_EXIT) {
 			stopSelf();
 		} else if (state == MESSAGE_START) {
 			String url = intent.getStringExtra("url");

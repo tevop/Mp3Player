@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
 	private int currentSongIndex;
 	private int currentPosition = -1;
 	private String currentDirPath;
+	private int playMode = Const.PLAY_MODE_NEXT;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -133,11 +134,24 @@ public class MainActivity extends Activity {
 						prepareLyrics(intent.getIntExtra("time", 0));
 					}
 					// showLyrics(intent.getLongExtra("time", 0));
+				} else if (intent.getAction().equals(Const.ACTION_SONG_FINISHED)) {
+					playing = false;
+					switch(playMode) {
+					case Const.PLAY_MODE_LOOP:
+						startPlay();
+						break;
+					case Const.PLAY_MODE_NEXT:
+						skipToNext();
+						break;
+						default:
+							break;
+					}
 				}
 			}
 		};
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Const.ACTION_PROGRESS);
+		filter.addAction(Const.ACTION_SONG_FINISHED);
 		registerReceiver(receiver, filter);
 	}
 
@@ -158,6 +172,9 @@ public class MainActivity extends Activity {
 			return;
 		}
 		currentPosition = index;
+		if (currentPosition < 0) {
+			return;
+		}
 		System.out.println("time is:" + time + ", index is: " + index
 				+ ", l time is: " + lyricsList.get(index).getTime());
 		lyricsView.setCurrentIndex(currentPosition);
@@ -310,6 +327,7 @@ public class MainActivity extends Activity {
 		if (!file.exists()) {
 			lyricsList = null;
 			lyricsView.setList(null);
+			lyricsView.setCurrentIndex(-1);
 			lyricsView.postInvalidate();
 			return;
 		}

@@ -6,6 +6,9 @@ public class Const {
 	public static final int RESULT_CANCEL = 1;
 	public static final int MESSAGE_REFRESH_PROGRESS = 0;
 	public static final int MESSAGE_REFRESH_LYRICS = 1;
-	public static final String ACTION_PROGRESS = "android.intent.action.PROGRESS";
+	public static final int PLAY_MODE_LOOP = 0;
+	public static final int PLAY_MODE_NEXT = 1;
+	public static final String ACTION_PROGRESS = "android.intent.action.progress";
+	public static final String ACTION_SONG_FINISHED = "android.intent.action.song_finished";
 
 }

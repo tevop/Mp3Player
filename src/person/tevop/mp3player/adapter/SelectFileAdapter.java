@@ -1,6 +1,7 @@
 package person.tevop.mp3player.adapter;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,16 @@ public class SelectFileAdapter extends BaseAdapter{
 		this.dir = dir;
 		this.context = context;
 		File dirFile = new File(dir);
-		File[] files = dirFile.listFiles();
+		File[] files = dirFile.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File file) {
+				if (file.isDirectory()
+						|| file.getName().toLowerCase().endsWith(".mp3")) {
+					return true;
+				}
+				return false;
+			}
+		});
 		list = new ArrayList<File>();
 		if (files == null || files.length == 0)
 		{
