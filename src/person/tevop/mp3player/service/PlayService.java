@@ -30,7 +30,14 @@ public class PlayService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		createPlayer();
 //		System.out.println("playService onCreate");
+	}
+	
+	private void createPlayer() {
+		if (mp != null) {
+			mp.release();
+		}
 		mp = new MediaPlayer();
 		mp.setOnCompletionListener(new OnCompletionListener() {
 			@Override
@@ -39,6 +46,7 @@ public class PlayService extends Service {
 //				if (looping) {
 //					start();
 //				}
+				stop();
 				Intent intent = new Intent(Const.ACTION_SONG_FINISHED);
 				sendBroadcast(intent);
 			}
@@ -46,27 +54,34 @@ public class PlayService extends Service {
 	}
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		System.out.println("playService onStartCommand");
-		if (intent == null) {
-			System.out.println("intent ====================== null");
-		}
+//		System.out.println("playService onStartCommand");
+//		if (intent == null) {
+//			System.out.println("intent ====================== null");
+//		}
 		int state = intent.getIntExtra("state", MESSAGE_PLAY);
 		if (state == MESSAGE_EXIT) {
 			stopSelf();
 		} else if (state == MESSAGE_START) {
+			stop();
 			String url = intent.getStringExtra("url");
 //			String lyricsUrl = url.replaceAll("\\\\.mp3", "\\\\.lrc");
 			try {
-				mp.reset();
+				mp.reset();                 // sometime's can't reuse
 				mp.setDataSource(url);
 				mp.prepare();
-				start();
 			} catch (IllegalStateException e) {
-				// TODO Auto-generated catch block
+				mp.release();
+				mp = null;
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
+				mp.release();
+				mp = null;
 				e.printStackTrace();
+			}
+			if (mp != null) {
+				start();
+			} else {
+				createPlayer();
 			}
 		} else if (state == MESSAGE_PLAY) {
 			if (mp.isPlaying()) {
@@ -104,18 +119,20 @@ public class PlayService extends Service {
 						if (mp == null) {
 							return;
 						}
+						try {
 						int currentPosition = mp.getCurrentPosition();
 						int duration = mp.getDuration();
-						try {
 							Thread.sleep(Const.TIME_PEROID);
+							Intent intent = new Intent(Const.ACTION_PROGRESS);
+							intent.putExtra("progress", currentPosition * 100 / duration);
+							intent.putExtra("time", currentPosition);
+							sendBroadcast(intent);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
+						} catch(IllegalStateException e) {
+							e.printStackTrace();
 						}
-						Intent intent = new Intent(Const.ACTION_PROGRESS);
-						intent.putExtra("progress", currentPosition * 100 / duration);
-						intent.putExtra("time", currentPosition);
-						sendBroadcast(intent);
 					}
 				}
 			}).start();

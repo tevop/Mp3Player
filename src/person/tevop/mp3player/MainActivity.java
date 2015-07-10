@@ -40,6 +40,7 @@ public class MainActivity extends Activity {
 	private int currentSongIndex;
 	private int currentPosition = -1;
 	private String currentDirPath;
+//	private boolean clicking;
 	private int playMode = Const.PLAY_MODE_NEXT;
 
 	@Override
@@ -68,7 +69,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
-				System.out.println("playing is: " + playing);
+//				System.out.println("playing is: " + playing);
 				if (fromUser && playing) {
 					Intent intent = new Intent(MainActivity.this,
 							PlayService.class);
@@ -87,7 +88,6 @@ public class MainActivity extends Activity {
 					return;
 				}
 				play();
-				changeState(playing = !playing);
 			}
 		});
 		findViewById(R.id.buttonExit).setOnClickListener(new OnClickListener() {
@@ -141,6 +141,8 @@ public class MainActivity extends Activity {
 						startPlay();
 						break;
 					case Const.PLAY_MODE_NEXT:
+//						System.out.println("receivin finish message!!!!!!!!!!!!!!!");
+//						Thread.dumpStack();
 						skipToNext();
 						break;
 						default:
@@ -258,6 +260,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void skipToNext() {
+//		System.out.println("skip to next");
 		if (songList == null) {
 			return;
 		}
@@ -285,11 +288,13 @@ public class MainActivity extends Activity {
 
 	private void changeSong(int index) {
 		url = songList.get(index);
+		playing = false;
 		readLyricsFile();
 	}
 
 	private void changeSong(String url) {
 		this.url = url;
+		playing = false;
 		String parent = url.substring(0, url.lastIndexOf(File.separatorChar));
 		if (!parent.equals(currentDirPath)) {
 			currentDirPath = parent;
@@ -353,8 +358,6 @@ public class MainActivity extends Activity {
 		// if (!started) {
 		intent.putExtra("state", PlayService.MESSAGE_START);
 		intent.putExtra("url", url);
-		started = true;
-		playing = true;
 		// } else {
 		//
 		// intent.putExtra("state", PlayService.MESSAGE_PLAY);
@@ -362,6 +365,9 @@ public class MainActivity extends Activity {
 		startService(intent);
 		intent.putExtra("state", PlayService.MESSAGE_LOOP);
 		startService(intent);
+		started = true;
+		playing = true;
+		changeState(playing);
 	}
 
 	private void play() {
@@ -374,6 +380,7 @@ public class MainActivity extends Activity {
 		startService(intent);
 		intent.putExtra("state", PlayService.MESSAGE_LOOP);
 		startService(intent);
+		changeState(playing = !playing);
 	}
 
 	private void changeState(boolean playing) {

@@ -97,7 +97,7 @@ public class LyricsView extends TextView{
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 //		System.out.println("ondraw............." + list);
-		System.out.println("offset is: " + offset);
+//		System.out.println("offset is: " + offset);
 		int width = getWidth();
 		int height = getHeight();
 		if (list == null) {
