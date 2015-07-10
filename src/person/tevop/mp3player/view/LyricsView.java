@@ -60,7 +60,8 @@ public class LyricsView extends TextView{
 //		}
 //		offset = (marginY * Const.TIME_PEROID) / (list.get(currentIndex + 1).getTime() - list.get(currentIndex).getTime());
 //		System.out.println("offset issssssssssssssss: " + offset);
-		if (this.currentIndex < currentIndex) {
+//		System.out.println("currentIndex is" + currentIndex);
+		if (this.currentIndex != currentIndex || currentIndex < 0) {
 			this.currentIndex = currentIndex;
 			offset = 0;
 			return;

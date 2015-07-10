@@ -140,6 +140,7 @@ public class PlayService extends Service {
 	}
 	
 	private void stop() {
+		System.out.println("stopping");
 		running = false;
 	}
 

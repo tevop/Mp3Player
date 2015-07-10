@@ -40,7 +40,9 @@ public class MainActivity extends Activity {
 	private int currentSongIndex;
 	private int currentPosition = -1;
 	private String currentDirPath;
-//	private boolean clicking;
+//	private boolean changing;
+//	private Object lock;
+	// private boolean clicking;
 	private int playMode = Const.PLAY_MODE_NEXT;
 
 	@Override
@@ -51,6 +53,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void init() {
+//		lock = new Object();
 		mSeekBar = (SeekBar) findViewById(R.id.seekBar);
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
@@ -69,7 +72,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
-//				System.out.println("playing is: " + playing);
+				// System.out.println("playing is: " + playing);
 				if (fromUser && playing) {
 					Intent intent = new Intent(MainActivity.this,
 							PlayService.class);
@@ -129,24 +132,30 @@ public class MainActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				if (intent.getAction().equals(Const.ACTION_PROGRESS)) {
-					refreshProgress(intent.getIntExtra("progress", 0));
-					if (lyricsList != null) {
-						prepareLyrics(intent.getIntExtra("time", 0));
-					}
+//					synchronized (lock) {
+//						if (changing) {
+//							return;
+//						}
+						refreshProgress(intent.getIntExtra("progress", 0));
+						if (lyricsList != null) {
+							prepareLyrics(intent.getIntExtra("time", 0));
+						}
+//					}
 					// showLyrics(intent.getLongExtra("time", 0));
-				} else if (intent.getAction().equals(Const.ACTION_SONG_FINISHED)) {
+				} else if (intent.getAction()
+						.equals(Const.ACTION_SONG_FINISHED)) {
 					playing = false;
-					switch(playMode) {
+					switch (playMode) {
 					case Const.PLAY_MODE_LOOP:
 						startPlay();
 						break;
 					case Const.PLAY_MODE_NEXT:
-//						System.out.println("receivin finish message!!!!!!!!!!!!!!!");
-//						Thread.dumpStack();
+						// System.out.println("receivin finish message!!!!!!!!!!!!!!!");
+						// Thread.dumpStack();
 						skipToNext();
 						break;
-						default:
-							break;
+					default:
+						break;
 					}
 				}
 			}
@@ -160,42 +169,41 @@ public class MainActivity extends Activity {
 	private void prepareLyrics(long time) {
 		int len = lyricsList.size();
 		int index = -1;
-		long timeFlow = 0;
 		long timeInList;
 		for (int i = 0; i < len; i++) {
 			timeInList = lyricsList.get(i).getTime();
 			if (lyricsList.get(i).getTime() > time) {
-				timeFlow = timeInList - time;
 				index = i;
 				break;
 			}
 		}
-//		if (index == currentPosition) {
-//			return;
-//		}
+		// if (index == currentPosition) {
+		// return;
+		// }
 		currentPosition = index;
+//		System.out.println("currentPosition is: =============== " + currentPosition);
 		if (currentPosition < 1) {
 			return;
 		}
-//		System.out.println("time is:" + time + ", index is: " + index
-//				+ ", l time is: " + lyricsList.get(index).getTime());
+		// System.out.println("time is:" + time + ", index is: " + index
+		// + ", l time is: " + lyricsList.get(index).getTime());
 		lyricsView.setCurrentIndex(currentPosition - 1);
-//		final long finalFlow = timeFlow;
-//		new Thread(new Runnable() {
-//			@Override
-//			public void run() {
-//				try {
-//					Thread.sleep(finalFlow);
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//				if (playing && handler != null) {
-//					handler.sendEmptyMessage(Const.MESSAGE_REFRESH_LYRICS);
-//				}
-//			}
-//
-//		}).start();
-		 lyricsView.postInvalidate();
+		// final long finalFlow = timeFlow;
+		// new Thread(new Runnable() {
+		// @Override
+		// public void run() {
+		// try {
+		// Thread.sleep(finalFlow);
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// if (playing && handler != null) {
+		// handler.sendEmptyMessage(Const.MESSAGE_REFRESH_LYRICS);
+		// }
+		// }
+		//
+		// }).start();
+		lyricsView.postInvalidate();
 	}
 
 	private void showDefaultLyricsList() {
@@ -203,22 +211,22 @@ public class MainActivity extends Activity {
 		lyricsView.postInvalidate();
 	}
 
-	private void refreshLyrics() {
-		lyricsView.setCurrentIndex(currentPosition);
-		lyricsView.postInvalidate();
-	}
+	// private void refreshLyrics() {
+	// lyricsView.setCurrentIndex(currentPosition);
+	// lyricsView.postInvalidate();
+	// }
 
 	private void initHandler() {
 		handler = new Handler(new Callback() {
 			@Override
 			public boolean handleMessage(Message msg) {
 				switch (msg.what) {
-				case Const.MESSAGE_REFRESH_LYRICS:
-					if (lyricsList != null) {
-						refreshLyrics();
-					}
-					// System.out.println("seekBar is set to: " + progress);
-					return true;
+				// case Const.MESSAGE_REFRESH_LYRICS:
+				// if (lyricsList != null) {
+				// refreshLyrics();
+				// }
+				// // System.out.println("seekBar is set to: " + progress);
+				// return true;
 				case Const.MESSAGE_REFRESH_PROGRESS:
 					if (mSeekBar != null) {
 						int progress = msg.arg1;
@@ -260,7 +268,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void skipToNext() {
-//		System.out.println("skip to next");
+		// System.out.println("skip to next");
 		if (songList == null) {
 			return;
 		}
@@ -327,6 +335,8 @@ public class MainActivity extends Activity {
 	}
 
 	private void readLyricsFile() {
+//		changing = true;
+//		synchronized(lock) {
 		String lyricsUrl = url.replaceAll("\\.mp3", "\\.lrc");
 		File file = new File(lyricsUrl);
 		if (!file.exists()) {
@@ -339,6 +349,8 @@ public class MainActivity extends Activity {
 		lyricsList = Tools.readLyrics(file);
 		lyricsView.setList(lyricsList);
 		showDefaultLyricsList();
+//		changing = false;
+//		}
 	}
 
 	private int getSongIndex(String url, List<String> songList) {
@@ -427,6 +439,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		mSeekBar = null;
+//		lock = null;
 		mButtonPlay = null;
 		if (handler != null) {
 			handler = null;
