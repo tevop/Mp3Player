@@ -10,5 +10,6 @@ public class Const {
 	public static final int PLAY_MODE_NEXT = 1;
 	public static final String ACTION_PROGRESS = "android.intent.action.progress";
 	public static final String ACTION_SONG_FINISHED = "android.intent.action.song_finished";
+	public static final long TIME_PEROID = 50;
 
 }

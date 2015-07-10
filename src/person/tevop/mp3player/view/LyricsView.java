@@ -2,6 +2,7 @@ package person.tevop.mp3player.view;
 
 import java.util.List;
 
+import person.tevop.mp3player.Const;
 import person.tevop.mp3player.bean.LyricsBean;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -19,6 +20,9 @@ public class LyricsView extends TextView{
 	private List<LyricsBean> list;
 	private int currentIndex;
 	private boolean cleared;
+	private float offset;
+	private final float baseOffset = 2;
+	float marginY = 100.0f;
 //	private boolean playing;
 
 	public LyricsView(Context context) {
@@ -46,10 +50,25 @@ public class LyricsView extends TextView{
 	
 	public void setList(List<LyricsBean> list) {
 		this.list = list;
+		this.currentIndex = 0;
 	}
 	
 	public void setCurrentIndex(int currentIndex) {
-		this.currentIndex = currentIndex;
+//		this.currentIndex = currentIndex;
+//		if (currentIndex < 0) {
+//			return;
+//		}
+//		offset = (marginY * Const.TIME_PEROID) / (list.get(currentIndex + 1).getTime() - list.get(currentIndex).getTime());
+//		System.out.println("offset issssssssssssssss: " + offset);
+		if (this.currentIndex < currentIndex) {
+			this.currentIndex = currentIndex;
+			offset = 0;
+			return;
+		}
+		offset += baseOffset;
+		if (offset >= marginY - baseOffset) {
+			offset = marginY - baseOffset;
+		}
 	}
 	
 //	private void startLyricsThread() {
@@ -78,19 +97,20 @@ public class LyricsView extends TextView{
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 //		System.out.println("ondraw............." + list);
+		System.out.println("offset is: " + offset);
+		int width = getWidth();
+		int height = getHeight();
 		if (list == null) {
 			if (cleared) {
 				return;
 			}
-			canvas.drawRect(new Rect(0, 0, getWidth(), getHeight()), clearPaint);
+			canvas.drawRect(new Rect(0, 0, width, height), clearPaint);
 			cleared = true;
 			return;
 		}
-		int width = getWidth();
-		int height = getHeight();
 		float currentX = width * 1.0f/2;
-		float marginY = 40.0f;
-		float currentY;
+//		float marginY = 80.0f;
+		float currentY/* = height * 1.0f/2 - offset*/;
 		if (currentIndex < 0) {
 			currentY = 0;
 			for (int i = 0; i < list.size(); i ++) {
@@ -98,10 +118,10 @@ public class LyricsView extends TextView{
 			}
 			return;
 		}
-		currentY = height * 1.0f/2;
+		currentY = height * 1.0f/2 - offset;
 		canvas.drawText(list.get(currentIndex).getText(), currentX, currentY, currentPaint);
 		for (int i = currentIndex - 1; i >= 0; i--) {
-			canvas.drawText(list.get(i).getText(), currentX, currentY - (currentIndex - i) * marginY, normalPaint);
+			canvas.drawText(list.get(i).getText(), currentX, currentY - (currentIndex - i) * marginY , normalPaint);
 			if (currentY - (currentIndex - i - 1) * marginY < 0) {
 				break;
 			}

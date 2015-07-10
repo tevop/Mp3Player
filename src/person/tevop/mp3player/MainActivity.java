@@ -168,32 +168,32 @@ public class MainActivity extends Activity {
 				break;
 			}
 		}
-		if (index == currentPosition) {
-			return;
-		}
+//		if (index == currentPosition) {
+//			return;
+//		}
 		currentPosition = index;
-		if (currentPosition < 0) {
+		if (currentPosition < 1) {
 			return;
 		}
-		System.out.println("time is:" + time + ", index is: " + index
-				+ ", l time is: " + lyricsList.get(index).getTime());
-		lyricsView.setCurrentIndex(currentPosition);
-		final long finalFlow = timeFlow;
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(finalFlow);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				if (playing && handler != null) {
-					handler.sendEmptyMessage(Const.MESSAGE_REFRESH_LYRICS);
-				}
-			}
-
-		}).start();
-		// lyricsView.postInvalidate();
+//		System.out.println("time is:" + time + ", index is: " + index
+//				+ ", l time is: " + lyricsList.get(index).getTime());
+		lyricsView.setCurrentIndex(currentPosition - 1);
+//		final long finalFlow = timeFlow;
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					Thread.sleep(finalFlow);
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//				if (playing && handler != null) {
+//					handler.sendEmptyMessage(Const.MESSAGE_REFRESH_LYRICS);
+//				}
+//			}
+//
+//		}).start();
+		 lyricsView.postInvalidate();
 	}
 
 	private void showDefaultLyricsList() {

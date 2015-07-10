@@ -107,7 +107,7 @@ public class PlayService extends Service {
 						int currentPosition = mp.getCurrentPosition();
 						int duration = mp.getDuration();
 						try {
-							Thread.sleep(200);
+							Thread.sleep(Const.TIME_PEROID);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
