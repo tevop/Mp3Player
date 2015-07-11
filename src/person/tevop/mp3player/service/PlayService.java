@@ -109,6 +109,7 @@ public class PlayService extends Service {
 	
 	private void start() {
 		mp.start();
+		sendSongTime(mp.getDuration());
 		if (!running) {
 			running = true;
 			new Thread(new Runnable() {
@@ -124,8 +125,9 @@ public class PlayService extends Service {
 						int duration = mp.getDuration();
 							Thread.sleep(Const.TIME_PEROID);
 							Intent intent = new Intent(Const.ACTION_PROGRESS);
-							intent.putExtra("progress", currentPosition * 100 / duration);
+//							intent.putExtra("progress", currentPosition * 100 / duration);
 							intent.putExtra("time", currentPosition);
+							intent.putExtra("duration", duration);
 							sendBroadcast(intent);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
@@ -137,6 +139,12 @@ public class PlayService extends Service {
 				}
 			}).start();
 		}
+	}
+	
+	private void sendSongTime(long time) {
+		Intent intent = new Intent(Const.ACTION_SONG_TIME);
+		intent.putExtra("duration", time);
+		sendBroadcast(intent);
 	}
 	
 	private void stop() {

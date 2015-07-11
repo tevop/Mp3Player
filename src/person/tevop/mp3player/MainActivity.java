@@ -24,6 +24,7 @@ import android.view.View.OnClickListener;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
@@ -40,8 +41,11 @@ public class MainActivity extends Activity {
 	private int currentSongIndex;
 	private int currentPosition = -1;
 	private String currentDirPath;
-//	private boolean changing;
-//	private Object lock;
+	private TextView textTime;
+	private long songTime;
+	private String songTimeText;
+	// private boolean changing;
+	// private Object lock;
 	// private boolean clicking;
 	private int playMode = Const.PLAY_MODE_NEXT;
 
@@ -53,8 +57,9 @@ public class MainActivity extends Activity {
 	}
 
 	private void init() {
-//		lock = new Object();
+		// lock = new Object();
 		mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+		textTime = (TextView) findViewById(R.id.textTime);
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
 			@Override
@@ -132,15 +137,19 @@ public class MainActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				if (intent.getAction().equals(Const.ACTION_PROGRESS)) {
-//					synchronized (lock) {
-//						if (changing) {
-//							return;
-//						}
-						refreshProgress(intent.getIntExtra("progress", 0));
-						if (lyricsList != null) {
-							prepareLyrics(intent.getIntExtra("time", 0));
-						}
-//					}
+					// synchronized (lock) {
+					// if (changing) {
+					// return;
+					// }
+					long time = intent.getIntExtra("time", 0);
+//					long duration = intent.getIntExtra("duration", 1);
+					int progress = (int)(time * 100 / songTime);
+					refreshProgress(progress);
+					if (lyricsList != null) {
+						prepareLyrics(intent.getIntExtra("time", 0));
+					}
+					refreshTime(time);
+					// }
 					// showLyrics(intent.getLongExtra("time", 0));
 				} else if (intent.getAction()
 						.equals(Const.ACTION_SONG_FINISHED)) {
@@ -157,13 +166,31 @@ public class MainActivity extends Activity {
 					default:
 						break;
 					}
+				} else if (intent.getAction().equals(Const.ACTION_SONG_TIME)) {
+					songTime = intent.getLongExtra(
+							"duration", 0);
+					songTimeText = convertTimeToString(songTime) + "    ";
 				}
 			}
 		};
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Const.ACTION_PROGRESS);
 		filter.addAction(Const.ACTION_SONG_FINISHED);
+		filter.addAction(Const.ACTION_SONG_TIME);
 		registerReceiver(receiver, filter);
+	}
+
+	private String convertTimeToString(long time) {
+		long hour = time / (1000 * 60 * 60);
+		long miniute = (time - hour * 60 * 60 * 1000) / (1000 * 60);
+		long second = (time - hour * 60 * 60 * 1000 - miniute * 1000 * 60) / 1000;
+		return "" + (hour < 10 ? ("0" + hour) : hour) + ":"
+				+ (miniute < 10 ? ("0" + miniute) : miniute) + ":"
+				+ (second < 10 ? ("0" + second) : second);
+	}
+
+	private void refreshTime(long time) {
+		textTime.setText(convertTimeToString(time) + "/" + songTimeText);
 	}
 
 	private void prepareLyrics(long time) {
@@ -181,7 +208,8 @@ public class MainActivity extends Activity {
 		// return;
 		// }
 		currentPosition = index;
-//		System.out.println("currentPosition is: =============== " + currentPosition);
+		// System.out.println("currentPosition is: =============== " +
+		// currentPosition);
 		if (currentPosition < 1) {
 			return;
 		}
@@ -335,8 +363,8 @@ public class MainActivity extends Activity {
 	}
 
 	private void readLyricsFile() {
-//		changing = true;
-//		synchronized(lock) {
+		// changing = true;
+		// synchronized(lock) {
 		String lyricsUrl = url.replaceAll("\\.mp3", "\\.lrc");
 		File file = new File(lyricsUrl);
 		if (!file.exists()) {
@@ -349,8 +377,8 @@ public class MainActivity extends Activity {
 		lyricsList = Tools.readLyrics(file);
 		lyricsView.setList(lyricsList);
 		showDefaultLyricsList();
-//		changing = false;
-//		}
+		// changing = false;
+		// }
 	}
 
 	private int getSongIndex(String url, List<String> songList) {
@@ -439,7 +467,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		mSeekBar = null;
-//		lock = null;
+		// lock = null;
+		textTime = null;
 		mButtonPlay = null;
 		if (handler != null) {
 			handler = null;
