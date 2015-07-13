@@ -408,6 +408,13 @@ public class MainActivity extends Activity {
 		started = true;
 		playing = true;
 		changeState(playing);
+		setTitle(getOnlyName(url));
+	}
+	
+	private String getOnlyName(String name) {
+		int begin = name.lastIndexOf(File.separatorChar);
+		int end = name.lastIndexOf('.');
+		return name.substring(begin < 0 ? 0 : begin + 1, end < 0 ? name.length() : end);
 	}
 
 	private void play() {

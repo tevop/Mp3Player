@@ -13,7 +13,7 @@ import android.os.IBinder;
 public class PlayService extends Service {
 	public static final int MESSAGE_START = 0;
 	public static final int MESSAGE_PLAY = 1;
-	public static final int MESSAGE_EXIT = 2;  //no use
+	public static final int MESSAGE_EXIT = 2;
 	public static final int MESSAGE_LOOP = 3;
 	public static final int MESSAGE_UNLOOP = 4;
 	public static final int MESSAGE_SKIP = 5;
