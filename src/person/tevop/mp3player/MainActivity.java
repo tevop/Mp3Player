@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import person.tevop.mp3player.bean.LyricsBean;
+import person.tevop.mp3player.dao.SongInfo;
 import person.tevop.mp3player.service.PlayService;
 import person.tevop.mp3player.view.LyricsView;
 import android.app.Activity;
@@ -43,7 +44,9 @@ public class MainActivity extends Activity {
 	private String currentDirPath;
 	private TextView textTime;
 	private long songTime;
+	private long currentTime;
 	private String songTimeText;
+//	private int progress;
 	// private boolean changing;
 	// private Object lock;
 	// private boolean clicking;
@@ -79,6 +82,7 @@ public class MainActivity extends Activity {
 					boolean fromUser) {
 				// System.out.println("playing is: " + playing);
 				if (fromUser && playing) {
+//					MainActivity.this.progress = progress;
 					Intent intent = new Intent(MainActivity.this,
 							PlayService.class);
 					intent.putExtra("state", PlayService.MESSAGE_SKIP);
@@ -130,6 +134,7 @@ public class MainActivity extends Activity {
 		lyricsView = (LyricsView) findViewById(R.id.textLyrics);
 		initReceiver();
 		initHandler();
+		loadSongInfo();
 	}
 
 	private void initReceiver() {
@@ -137,10 +142,6 @@ public class MainActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				if (intent.getAction().equals(Const.ACTION_PROGRESS)) {
-					// synchronized (lock) {
-					// if (changing) {
-					// return;
-					// }
 					long time = intent.getIntExtra("time", 0);
 //					long duration = intent.getIntExtra("duration", 1);
 					int progress = (int)(time * 100 / songTime);
@@ -179,6 +180,26 @@ public class MainActivity extends Activity {
 		filter.addAction(Const.ACTION_SONG_TIME);
 		registerReceiver(receiver, filter);
 	}
+	
+	private void skipToProgress(long time) {
+//		long time = intent.getIntExtra("time", 0);
+//		int progress = (int)(time * 100 / songTime);
+//		refreshProgress(progress);
+//		long time = (long)progress * songTime / 100;
+//		if (lyricsList != null) {
+//			prepareLyrics(time);
+//		}
+//		refreshTime(time);
+//		
+
+//		MainActivity.this.progress = progress;
+		int progress = (int)(time * 100 / songTime);
+		Intent intent = new Intent(MainActivity.this,
+				PlayService.class);
+		intent.putExtra("state", PlayService.MESSAGE_SKIP);
+		intent.putExtra("value", progress);
+		startService(intent);
+	}
 
 	private String convertTimeToString(long time) {
 		long hour = time / (1000 * 60 * 60);
@@ -190,6 +211,7 @@ public class MainActivity extends Activity {
 	}
 
 	private void refreshTime(long time) {
+		currentTime = time;
 		textTime.setText(convertTimeToString(time) + "/" + songTimeText);
 	}
 
@@ -403,8 +425,8 @@ public class MainActivity extends Activity {
 		// intent.putExtra("state", PlayService.MESSAGE_PLAY);
 		// }
 		startService(intent);
-		intent.putExtra("state", PlayService.MESSAGE_LOOP);
-		startService(intent);
+//		intent.putExtra("state", PlayService.MESSAGE_LOOP);
+//		startService(intent);
 		started = true;
 		playing = true;
 		changeState(playing);
@@ -422,11 +444,19 @@ public class MainActivity extends Activity {
 			openFile();
 			return;
 		}
+		if (!started) {
+			changeSong(url);
+			startPlay();
+			if (currentTime > 0) {
+				skipToProgress(currentTime);
+			}
+			return;
+		}
 		Intent intent = new Intent(this, PlayService.class);
 		intent.putExtra("state", PlayService.MESSAGE_PLAY);
 		startService(intent);
-		intent.putExtra("state", PlayService.MESSAGE_LOOP);
-		startService(intent);
+//		intent.putExtra("state", PlayService.MESSAGE_LOOP);
+//		startService(intent);
 		changeState(playing = !playing);
 	}
 
@@ -473,6 +503,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
+		saveSongInfo();
 		mSeekBar = null;
 		// lock = null;
 		textTime = null;
@@ -503,6 +534,26 @@ public class MainActivity extends Activity {
 			lyricsView = null;
 		}
 		super.onDestroy();
+	}
+	
+	private void saveSongInfo() {
+		SongInfo info = new SongInfo(this);
+		info.setUrl(url);
+//		info.setProgress(progress);
+		info.setTime(songTime);
+		info.setCurrentTime(currentTime);
+		System.out.println("saving songInfo: " + currentTime + ", " + currentTime);
+		info.saveData();
+	}
+	
+	private void loadSongInfo() {
+		SongInfo info = new SongInfo(this);
+		info.loadData();
+		url = info.getUrl();
+//		progress = info.getProgress();
+		songTime = info.getTime();
+		currentTime = info.getCurrentTime();
+		System.out.println("loading songInfo: " + currentTime + ", " + currentTime);
 	}
 
 }

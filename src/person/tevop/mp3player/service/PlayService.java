@@ -14,11 +14,11 @@ public class PlayService extends Service {
 	public static final int MESSAGE_START = 0;
 	public static final int MESSAGE_PLAY = 1;
 	public static final int MESSAGE_EXIT = 2;
-	public static final int MESSAGE_LOOP = 3;
-	public static final int MESSAGE_UNLOOP = 4;
+//	public static final int MESSAGE_LOOP = 3;
+//	public static final int MESSAGE_UNLOOP = 4;
 	public static final int MESSAGE_SKIP = 5;
 	MediaPlayer mp;
-	private boolean looping;
+//	private boolean looping;
 	private boolean running;
 
 	@Override
@@ -65,19 +65,7 @@ public class PlayService extends Service {
 			stop();
 			String url = intent.getStringExtra("url");
 //			String lyricsUrl = url.replaceAll("\\\\.mp3", "\\\\.lrc");
-			try {
-				mp.reset();                 // sometime's can't reuse
-				mp.setDataSource(url);
-				mp.prepare();
-			} catch (IllegalStateException e) {
-				mp.release();
-				mp = null;
-				e.printStackTrace();
-			} catch (IOException e) {
-				mp.release();
-				mp = null;
-				e.printStackTrace();
-			}
+			prepareMP(url);
 			if (mp != null) {
 				start();
 			} else {
@@ -89,9 +77,9 @@ public class PlayService extends Service {
 			} else {
 				start();
 			}
-		} else if (state == MESSAGE_LOOP || state == MESSAGE_UNLOOP) {
+		} /*else if (state == MESSAGE_LOOP || state == MESSAGE_UNLOOP) {
 			looping = state == MESSAGE_LOOP ? true : false;
-		} else if (state == MESSAGE_SKIP) {
+		} */else if (state == MESSAGE_SKIP) {
 			int progress = intent.getIntExtra("value", 0);
 //			System.out.println("value is: " + progress);
 			if (mp.isPlaying()) {
@@ -100,6 +88,22 @@ public class PlayService extends Service {
 			}
 		}
 		return super.onStartCommand(intent, flags, startId);
+	}
+	
+	private void prepareMP(String url) {
+		try {
+			mp.reset();                 // sometime's can't reuse
+			mp.setDataSource(url);
+			mp.prepare();
+		} catch (IllegalStateException e) {
+			mp.release();
+			mp = null;
+			e.printStackTrace();
+		} catch (IOException e) {
+			mp.release();
+			mp = null;
+			e.printStackTrace();
+		}
 	}
 	
 	private void pause() {
